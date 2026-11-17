@@ -1,0 +1,1 @@
+execute as @e[type=item,distance=..5] at @s run summon lightning_bolt
