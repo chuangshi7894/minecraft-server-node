@@ -1,0 +1,53 @@
+依赖：pip install easy-mc-launcher
+启动脚本：
+import os
+import json
+import subprocess
+
+# ---------- 配置区 ----------
+minecraft_dir = r"C:\Users\你的用户名\AppData\Roaming\.minecraft"
+java_path = r"C:\Program Files\Java\jdk-17\bin\javaw.exe"
+memory = "4G"
+version = "1.20.1"          # 对应 versions 文件夹下的版本名
+username = "Steve"
+# ---------------------------
+
+# 1. 读取版本 JSON
+version_json_path = os.path.join(minecraft_dir, "versions", version, f"{version}.json")
+with open(version_json_path, "r", encoding="utf-8") as f:
+    version_info = json.load(f)
+
+# 2. 构建 classpath
+libraries = []
+for lib in version_info["libraries"]:
+    # 部分库没有 artifact（比如仅 natives 的），跳过
+    artifact = lib.get("downloads", {}).get("artifact")
+    if artifact and "path" in artifact:
+        lib_path = os.path.join(minecraft_dir, "libraries", artifact["path"])
+        libraries.append(lib_path)
+
+# 加上版本自身的 jar
+version_jar = os.path.join(minecraft_dir, "versions", version, f"{version}.jar")
+libraries.append(version_jar)
+
+classpath = os.pathsep.join(libraries)
+
+# 3. 构建启动命令
+command = [
+    java_path,
+    f"-Xmx{memory}",
+    f"-Xms512M",
+    f"-Djava.library.path={os.path.join(minecraft_dir, 'versions', version, 'natives-windows')}",
+    "-cp", classpath,
+    version_info["mainClass"],
+    "--username", username,
+    "--version", version,
+    "--gameDir", minecraft_dir,
+    "--assetsDir", os.path.join(minecraft_dir, "assets"),
+    "--assetIndex", version_info.get("assetIndex", {}).get("id", "legacy"),
+    "--uuid", "00000000000000000000000000000000",
+    "--accessToken", "0",
+]
+
+# 4. 启动
+subprocess.Popen(command)
