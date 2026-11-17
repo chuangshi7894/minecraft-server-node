@@ -1,0 +1,3 @@
+如果你只是想把自己写的那个脚本变成可执行文件，在 Windows 上操作如下：
+1.安装 PyInstaller：在命令行里运行 pip install pyinstaller。
+2.打包成单文件：进入脚本所在目录，运行：
